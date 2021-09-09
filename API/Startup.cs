@@ -30,12 +30,27 @@ namespace API
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy(name: "AllowAll",
+                    policy =>
+                    {
+                        policy.AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .WithOrigins("http://localhost:3000");
+                    });
+
+            });
+
             services.AddControllers();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
             });
-            services.AddDbContext<DataContext>(opt => {
+
+            services.AddDbContext<DataContext>(opt =>
+            {
                 opt.UseSqlite(_config.GetConnectionString("DefaultConnection"));
             });
         }
@@ -43,6 +58,7 @@ namespace API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -53,7 +69,9 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors("AllowAll");
 
+            //app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
